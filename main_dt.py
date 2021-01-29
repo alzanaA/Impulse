@@ -1,5 +1,4 @@
 #Program Waras+
-#Made by: Sarah Alyaa
 
 # Load libraries
 import pandas as pd
