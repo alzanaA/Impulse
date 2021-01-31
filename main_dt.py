@@ -14,8 +14,30 @@ from datetime import date
 today = date.today()
 
 #Load Database
-col_names = ['pregnant', 'glucose', 'bp', 'skin', 'insulin', 'bmi', 'pedigree', 'age', 'label']
-data = pd.read_csv("database.csv", header=None, names=col_names).apply(lambda x: x.astype(str).str.lower())
+data = pd.read_csv("test2.csv", header=0)
+filename = "test2.csv"
+data_diabetes = pd.read_csv("PimaIndiansdata.csv", header=0)
+data_heart = pd.read_csv("heart.csv", header=0)
+data_user = pd.read_csv("user.csv",header=0)
+data['Nama'] = data['Nama'].str.lower()
+
+def log_in():
+	#Inisialisasi variabel
+	valid = 0
+	#Fungsi
+	clear()
+	print("\nLOGIN\n___________________________")
+	while (valid == 0):
+		input_user = input("\nMasukkan Username: ")
+		input_pass = input("\nMasukkan Password: ")
+		hasil = data_user.loc[data_user['username'] == input_user]
+		if ((hasil.empty == True) or (hasil.values[0][1] != input_pass)):
+			clear()
+			print("\nLOGIN\n___________________________\n")
+			print("Username/Password Salah! Coba Lagi.\n")
+		else:
+			valid = 1
+	return(valid)
 
 def clear(): 
     # for windows 
@@ -25,9 +47,52 @@ def clear():
     else: 
         _ = system('clear') 
 
-# Fungsi get_node untuk mengambil suatu node dari dataset
-def get_node(X):
-    return clf.tree_.apply(check_array(X, dtype=DTYPE))
+def DTpredict(data_target,predict_target):
+	# load dataset
+	if (predict_target == 'Diabetes'):
+		data = data_diabetes
+		feature_cols = ['glucose', 'BMI', 'Age','dbp']
+	elif (predict_target == 'Penyakit Jantung'):
+		data = data_heart
+		feature_cols = ['Age','sbp','chol','fbs','thalach','oldpeak','slope','cp']
+
+	# split dataset in features and target variable
+	X = data[feature_cols] # Features -> independent variables
+	y = data.label # Target variable -> dependant variables
+
+	# Split dataset into training set and test set
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
+	test_data = data_target.head(1)[feature_cols]
+
+	# Create Decision Tree 
+	clf = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+	clf = clf.fit(X_train,y_train)
+
+	#Predict the response for test dataset
+	y_pred = clf.predict(X_test)
+	y_pred_test = clf.predict(test_data)	
+	node_idx = clf.tree_.apply(check_array(test_data, dtype=DTYPE))
+	y_pred_prob = y_train[clf.tree_.apply(check_array(X_train, dtype=DTYPE)) == node_idx].mean()
+	accuracy = metrics.accuracy_score(y_test, y_pred)
+
+	#Showing the result
+	category_target = ""
+	probabilty_target = y_pred_prob * accuracy * 100
+	if (probabilty_target <= 15):
+		category_target = "Sangat Rendah"
+	elif (probabilty_target > 15 and probabilty_target <= 25):
+		category_target = "Rendah"
+	elif (probabilty_target > 25 and probabilty_target <= 35):
+		category_target = "Cukup Rendah"
+	elif (probabilty_target > 35 and probabilty_target <= 45):
+		category_target = "Sedang"
+	elif (probabilty_target > 45 and probabilty_target <= 60):
+		category_target = "Cukup Tinggi"
+	elif (probabilty_target > 60):
+		category_target = "Tinggi"
+
+	print("Kemungkinan Mengidap %s: " % (predict_target),end="") 
+	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob * accuracy * 100) + '%)') 
 
 def menu():
 	#Inisialisasi variabel
@@ -48,10 +113,11 @@ def menu_cekData():
 	#Fungsi
 	clear()
 	curr_month_year = today.strftime("%B %Y")
-	print("Data Kesehatan Terbaru (Update: %s)" % (curr_month_year))
-	idx = data.groupby(['nama','tahun'])['bulan'].transform(max) == data['bulan']
-	idy = data[idx].groupby(['nama'])['tahun'].transform(max) == data[idx]['tahun']
-	print(data[idx][idy])
+	print("\t\tData Kesehatan Terbaru \n\t(terakhir diperbaharui: %s)\n__________________________________________________\n" % (curr_month_year))
+	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
+	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
+	print(data[idx][idy][['ID','Nama','Level BMI','Level Cholesterol','Level Tekanan Darah',
+		'Level Gula Darah','Tahun','Bulan']].sort_values(by = ['ID']).to_string(index=False))
 	print("\nCatatan: Data lengkap dapat dicek pada data Individu\n")
 	
 	in_menu = int(input("Pilih fitur:\n1. Data Individu\n2. Update Data\n3. Kembali\nPilihan: "))
@@ -64,125 +130,47 @@ def menu_cekData():
 
 def cekData_search():
 	#Inisialisasi variabel
-	in_menu = 0
-	#Fungsi
-	clear()
-	while (in_menu != 3):
-		print("\nPENCARIAN DATA\n___________________________")
-		in_menu = int(input("\nCari Data Berdasarkan: \n1. ID; \n2. Nama Lengkap\n3. Kembali\nPilihan: "))
-		while ((in_menu < 1) and (valid > 3)):
-			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
-		if (in_menu == 1):
-			cekData_searchID()			
-		elif (in_menu == 2):
-			cekData_searchNamaLengkap()
-	return()
-
-def cekData_searchID():
-	#Inisialisasi variabel
 	valid = 0
 	#Fungsi
 	while (valid == 0):
 		clear()
-		print("\nPENCARIAN DATA BERDASARKAN ID\n")
-		inputID = input("\nMasukkan ID: ")
-		hasil = data.loc[data["id"] == inputID]
+		print("\nPENCARIAN DATA\n__________________________________________________")
+		input_data = input("\nMasukkan ID / Nama Lengkap: ")
+		if (input_data.isnumeric()):
+			attribute = "ID"
+			input_data = int(input_data)
+		else:
+			attribute = "Nama"
+		hasil = data.loc[data[attribute] == input_data].sort_values(by = ["Tahun","Bulan"],ascending=False).head()
+		
 		# Menampilkan data
 		if (hasil.empty == True):
 			print("Data tidak ditemukan.")
 		else:
-			print(hasil.sort_values(by = ["tahun","bulan"],ascending=False))
+			print('__________________________________________________\n')
+			print(hasil.loc[:, 'Bulan':'cp'].to_string(index=False))
+			print('\n__________________________________________________\n')
+			print("\nLevel Pengukuran Terbaru: \n")
+			print(hasil.loc[:, 'Level BMI':'Level Gula Darah'].head(1).T.to_string(header=False)) 
+			print('\n__________________________________________________\n')
+			print("\nPrediksi Penyakit Terbaru: \n")
+			DTpredict(hasil,'Diabetes')
+			DTpredict(hasil,'Penyakit Jantung')
+			print('\n__________________________________________________\n')
+
 		# Melanjutkan Pencarian
 		valid = int(input("\nLanjutkan Pencarian?   0. Ya 	1. Tidak\n\nPilihan: "))
 		while ((valid != 0) and (valid != 1)):
 			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
-	return()
-
-
-def cekData_searchNama():
-	#Inisialisasi variabel
-	valid = 0
-	#Fungsi
-	while (valid == 0):
-		clear()
-		print("\nPENCARIAN DATA BERDASARKAN NAMA LENGKAP\n___________________________")
-		inputNama = input("\nMasukkan Nama Lengkap (non-kapital): ")
-		hasil = data.loc[data["nama"] == inputNama]
-		# Menampilkan data
-		if (hasil.empty == True):
-			print("Data tidak ditemukan.")
-		else:
-			print("Laporan Kesehatan %s\n" % (inputNama))
-			print(hasil.sort_values(by = ["tahun","bulan"],ascending=False).head(10))
-		# Melanjutkan Pencarian
-		valid = int(input("\nLanjutkan Pencarian?   0. Ya 	1. Tidak\n\nPilihan: "))
-		while ((valid != 0) and (valid != 1)):
-			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
-	return()
-
-def cekData_update():
-	#Inisiasi Variabel
-	valid = 0
-	#Fungsi
-	while (valid == 0):
 	clear()
-	print("\nUPDATE DATA KESEHATAN\n___________________________\nMasukkan Data: \n")
-	#Update Data (Sesuaikan dengan data apa saja yang akan diinput)
-	id_upd = input("No. ID: ")
-	name_upd = input("Nama Lengkap: ")
-	bulan_upd = int(today.strftime("%m"))
-	tahun_upd = int(today.strftime("%Y"))
-	angka_upd = input("Angka: ")
-	new_data = {'id': [ide_upd], 'nama':[name_upd], 'bulan':[bulan_upd], 'tahun':[tahun_upd], 'angka':[angka_upd]}
-	df_new_data = pd.DataFrame(new_data)
-	# data = data.append(new_upd, ignore_index=True)
-	df_new_data.to_csv('database.csv', mode='a', header=False, index=False)
-	print("\nData berhasil disimpan!\n")
-	#Pilihan
-	valid = int(input("Lanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
-	while ((valid != 0) and (valid != 1)):
-		valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return()
-
-def DTpredict():
-	# load dataset
-	data = pd.read_csv("PimaIndiansdata.csv", header=0) #header 0 = if there is column name on the first row
-
-	# split dataset in features and target variable
-	feature_cols = ['insulin', 'bmi','age','glucose','bp','pedigree']
-	X = data[feature_cols] # Features -> independent variables
-	y = data.label # Target variable -> dependant variables
-
-	# Split dataset into training set and test set
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
-
-	# Create Decision Tree 
-	clf = DecisionTreeClassifier(criterion="entropy", max_depth=5)
-	clf = clf.fit(X_train,y_train)
-
-	#Predict the response for test dataset
-	data_test = {'insulin': [insulin_test], 'bmi':[bmi_test], 'age':[age_test], 'glucose':[glucose_test], 'bp':[bp_test], 'pedigree':[pedigree_test]}
-	df_data_test = pd.DataFrame(data_test)
-	y_pred = clf.predict(X_test)
-	y_pred_test = clf.predict(df_data_test)
-	i = 0
-	j = 1
-	for j in range(1,51):
-		node_idx = get_node(X_test[i:j])
-		y_pred_prob = y_train[get_node(X_train) == node_idx].mean()
-		print ("Actual: %s. Predicted: %s. Possibility: %s" % (y_test.iloc[i], y_pred[i], y_pred_prob))
-		i = j
-
-	# Model Accuracy, how often is the classifier correct?
-	print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-
 
 def menu_cekGizi():
 	#Inisialisasi variabel
 	valid = 0
 
 	#Fungsi
-	menu = int(input("Pilih fitur:\n1. Rekomendasi menu\n2. Pantangan Konsumsi\n3. Kembali\n Pilihan: "))
+	in_menu = int(input("Pilih fitur:\n1. Rekomendasi menu\n2. Pantangan Konsumsi\n3. Kembali\n Pilihan: "))
 	while (valid == 0):
 		if (in_menu > 0 and in_menu <= 3):
 			valid = 1
@@ -190,16 +178,64 @@ def menu_cekGizi():
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
 
+def isLevelChol(amount):
+	level = ""
+	if amount < 200:
+		level = "Normal"
+	elif (amount >= 200 and amount <= 239):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return (level)
+
+def isLevelBP(amount):
+	level = ""
+	if amount < 90:
+		level = "Rendah"
+	if (amount >= 90 and amount < 120):
+		level = "Normal"
+	elif (amount >= 120 and amount <= 140):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return(level)
+
+def isLevelGlucose(amount):
+	level = ""
+	if amount < 100:
+		level = "Normal"
+	elif (amount >= 100 and amount <= 125):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return (level)
+
+def isLevelBMI(amount):
+	level = ""
+	if amount < 18.5:
+		level = "Underweight"
+	elif (amount >= 18.5 and amount < 25):
+		level = "Normal"
+	elif (amount >= 25 and amount < 30):
+		level = "Obesitas"
+	else:
+		level = "Obesitas Ekstrim"
+	return(level)
+
 
 # Main Program
-# Inisialisasi
-in_menu = 0
-in_menuCekData = 0
-in_menuCekGizi = 0
+#Login
+login = log_in()
 
 #After Login
-login = log_in()
 while (login == 1):
+
+	#Inisialisasi Variabel
+	in_menu = 0
+	in_menuCekData = 0
+	in_menuCekGizi = 0
+
+	#Menu
 	in_menu = menu()
 	if (in_menu == 1): #Cek Data
 		while (in_menuCekData != 3):
@@ -207,7 +243,8 @@ while (login == 1):
 			if (in_menuCekData == 1): #Cek Data Individu
 				cekData_search() 
 			elif (in_menuCekData == 2): #Update Data
-				cekData_update()
+				# cekData_update()
+				print("On Progress.....")
 	elif (in_menu == 2): #Cek Gizi
 		while (in_menuCekGizi != 3):
 			in_menuCekGizi = menu_cekGizi()
@@ -217,15 +254,9 @@ while (login == 1):
 				print("Pantangan")
 	elif (in_menu == 3):
 		login = 0
-log_out()
 
-
-
-
-
-
-
-
-
+#Logout
+clear()
+print("Terima Kasih\nTetap Jaga Kesehatan Bersama\n--- WARAS+ ---")
 
 
