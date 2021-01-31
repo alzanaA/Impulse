@@ -167,29 +167,29 @@ def cekData_search():
 	clear()
 	return()
 
-def cekData_update(filename):
-	#Inisiasi Variabel
-	valid = 0
-	#Fungsi
-	while (valid == 0):
-		clear()
-		print("\nUPDATE DATA KESEHATAN\n___________________________\nMasukkan Data: \n")
-		#Update Data (Sesuaikan dengan data apa saja yang akan diinput)
-		id_upd = input("No. ID: ")
-		name_upd = input("Nama Lengkap: ")
-		bulan_upd = int(today.strftime("%m"))
-		tahun_upd = int(today.strftime("%Y"))
-		angka_upd = input("Angka: ")
-		new_data = {'id': [ide_upd], 'nama':[name_upd], 'bulan':[bulan_upd], 'tahun':[tahun_upd], 'angka':[angka_upd]}
-		df_new_data = pd.DataFrame(new_data)
-		# data = data.append(new_upd, ignore_index=True)
-		df_new_data.to_csv(filename, mode='a', header=False, index=False)
-		print("\nData berhasil disimpan!\n")
-		#Pilihan
-		valid = int(input("Lanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
-		while ((valid != 0) and (valid != 1)):
-			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
-	return()
+# def cekData_update(filename):
+# 	#Inisiasi Variabel
+# 	valid = 0
+# 	#Fungsi
+# 	while (valid == 0):
+# 		clear()
+# 		print("\nUPDATE DATA KESEHATAN\n___________________________\nMasukkan Data: \n")
+# 		#Update Data (Sesuaikan dengan data apa saja yang akan diinput)
+# 		id_upd = input("No. ID: ")
+# 		name_upd = input("Nama Lengkap: ")
+# 		bulan_upd = int(today.strftime("%m"))
+# 		tahun_upd = int(today.strftime("%Y"))
+# 		angka_upd = input("Angka: ")
+# 		new_data = {'id': [ide_upd], 'nama':[name_upd], 'bulan':[bulan_upd], 'tahun':[tahun_upd], 'angka':[angka_upd]}
+# 		df_new_data = pd.DataFrame(new_data)
+# 		# data = data.append(new_upd, ignore_index=True)
+# 		df_new_data.to_csv(filename, mode='a', header=False, index=False)
+# 		print("\nData berhasil disimpan!\n")
+# 		#Pilihan
+# 		valid = int(input("Lanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
+# 		while ((valid != 0) and (valid != 1)):
+# 			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
+# 	return()
 
 def menu_cekGizi():
 	#Inisialisasi variabel
