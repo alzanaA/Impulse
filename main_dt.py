@@ -21,24 +21,6 @@ data_heart = pd.read_csv("heart.csv", header=0)
 data_user = pd.read_csv("user.csv",header=0)
 data['Nama'] = data['Nama'].str.lower()
 
-def log_in():
-	#Inisialisasi variabel
-	valid = 0
-	#Fungsi
-	clear()
-	print("\nLOGIN\n___________________________")
-	while (valid == 0):
-		input_user = input("\nMasukkan Username: ")
-		input_pass = input("\nMasukkan Password: ")
-		hasil = data_user.loc[data_user['username'] == input_user]
-		if ((hasil.empty == True) or (hasil.values[0][1] != input_pass)):
-			clear()
-			print("\nLOGIN\n___________________________\n")
-			print("Username/Password Salah! Coba Lagi.\n")
-		else:
-			valid = 1
-	return(valid)
-
 def clear(): 
     # for windows 
     if name == 'nt': 
@@ -46,6 +28,56 @@ def clear():
     # for mac and linux(here, os.name is 'posix') 
     else: 
         _ = system('clear') 
+
+def isLevelChol(amount):
+	level = ""
+	if amount < 200:
+		level = "Normal"
+	elif (amount >= 200 and amount <= 239):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return (level)
+
+def isLevelBP(amount):
+	level = ""
+	if amount < 90:
+		level = "Rendah"
+	if (amount >= 90 and amount < 120):
+		level = "Normal"
+	elif (amount >= 120 and amount <= 140):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return(level)
+
+def isLevelGlucose(amount):
+	level = ""
+	if amount < 100:
+		level = "Normal"
+	elif (amount >= 100 and amount <= 125):
+		level = "Sedang"
+	else:
+		level = "Tinggi"
+	return (level)
+
+def isLevelBMI(amount):
+	level = ""
+	if amount < 18.5:
+		level = "Underweight"
+	elif (amount >= 18.5 and amount < 25):
+		level = "Normal"
+	elif (amount >= 25 and amount < 30):
+		level = "Obesitas"
+	else:
+		level = "Obesitas Ekstrim"
+	return(level)
+
+def isfbs(amount):
+	if (amount > 120):
+		return(1)
+	else: 
+		return(0)
 
 def DTpredict(data_target,predict_target):
 	# load dataset
@@ -96,11 +128,30 @@ def DTpredict(data_target,predict_target):
 	print("Kemungkinan Mengidap %s: " % (predict_target),end="") 
 	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob * accuracy * 100) + '%)') 
 
+def log_in():
+	#Inisialisasi variabel
+	valid = 0
+	#Fungsi
+	clear()
+	print("------------------------------------\n----------- WARAS+:LOGIN -----------\n------------------------------------\n")
+	while (valid == 0):
+		input_user = input("\nMasukkan Username: ")
+		input_pass = input("\nMasukkan Password: ")
+		hasil = data_user.loc[data_user['username'] == input_user]
+		if ((hasil.empty == True) or (hasil.values[0][1] != input_pass)):
+			clear()
+			print("\nLOGIN\n___________________________\n")
+			print("Username/Password Salah! Coba Lagi.\n")
+		else:
+			valid = 1
+	return(valid)
+
 def menu():
 	#Inisialisasi variabel
 	valid = 0
 	#Fungsi
 	clear()
+	print("------------------------------------\n-------- WARAS+: MAIN MENU ---------\n------------------------------------\n")
 	in_menu = int(input("Pilih menu:\n1. Data Kesehatan\n2. Info Gizi\n3. Log Out\n Pilihan: "))
 	while (valid == 0):
 		if (in_menu > 0 and in_menu <= 3):
@@ -121,7 +172,9 @@ def menu_cekData():
 	print(data[idx][idy][['ID','Nama','Level BMI','Level Cholesterol','Level Tekanan Darah',
 		'Level Gula Darah','Tahun','Bulan']].sort_values(by = ['ID']).to_string(index=False))
 	print("\nCatatan: Data lengkap dapat dicek pada data Individu\n")
-	
+	print("Keterangan:\nBMI: underweight (<18.5); normal (18.5-25); obesitas (25-30); obesitas ekstrim (>30)\nCholesterol: normal (<200); sedang (200-239); tinggi (>239)")
+	print("Tekanan Darah (Sistol): rendah (<90); normal (90-120); sedang (120-140); tinggi (>140)\nGula Darah: normal (<100); sedang (100-140); tinggi (>140)\n")
+
 	in_menu = int(input("Pilih fitur:\n1. Data Individu\n2. Update Data\n3. Kembali\nPilihan: "))
 	while (valid == 0):
 		if (in_menu > 0 and in_menu <= 3):
@@ -137,7 +190,7 @@ def cekData_search():
 	while (valid == 0):
 		clear()
 		print("\nPENCARIAN DATA\n__________________________________________________")
-		input_data = input("\nMasukkan ID / Nama Lengkap: ")
+		input_data = input("\nMasukkan ID / Nama Lengkap: ").lower()
 		if (input_data.isnumeric()):
 			attribute = "ID"
 			input_data = int(input_data)
@@ -167,26 +220,80 @@ def cekData_search():
 	clear()
 	return()
 
-def cekData_update(filename):
+def cekData_update():
 	#Inisiasi Variabel
 	valid = 0
+	valid2 = 0
 	#Fungsi
 	while (valid == 0):
 		clear()
-		print("\nUPDATE DATA KESEHATAN\n___________________________\nMasukkan Data: \n")
+		print("\nUPDATE DATA KESEHATAN\n_________________________________\n\nMasukkan Data: \n")
 		#Update Data (Sesuaikan dengan data apa saja yang akan diinput)
-		id_upd = input("No. ID: ")
-		name_upd = input("Nama Lengkap: ")
 		bulan_upd = int(today.strftime("%m"))
 		tahun_upd = int(today.strftime("%Y"))
-		angka_upd = input("Angka: ")
-		new_data = {'id': [ide_upd], 'nama':[name_upd], 'bulan':[bulan_upd], 'tahun':[tahun_upd], 'angka':[angka_upd]}
-		df_new_data = pd.DataFrame(new_data)
-		# data = data.append(new_upd, ignore_index=True)
-		df_new_data.to_csv(filename, mode='a', header=False, index=False)
-		print("\nData berhasil disimpan!\n")
-		#Pilihan
-		valid = int(input("Lanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
+		#Input data
+		name_upd = input("Nama Lengkap: ").lower()
+		hasil = data.loc[data['Nama'] == name_upd]
+
+		if ((hasil.empty == True)): #Nama tidak ada di database
+			in_menu = int(input("Nama tidak ditemukan. Buat baru?   0. Ya 	1. Tidak\nPilihan: ")) 
+			while (valid2 == 0):
+				if (in_menu == 0): #Pembuatan data anggota baru
+					clear()
+					print("\nUPDATE DATA KESEHATAN\n_________________________________\n\nPembuatan Data Baru\n")
+					print("Nama Lengkap: %s" % (name_upd))
+					#Input data baru
+					print(type(data["ID"].max()))
+					print(data["ID"].max())
+					id_upd = data["ID"].max() + 1
+					print(id_upd)
+					age_upd = int(input("Umur: "))
+					glucose_upd = int(input("Gula Darah: "))
+					bmi_upd = int(input("BMI: "))
+					sbp_upd = int(input("Tekanan Darah Sistole: "))
+					dbp_upd = int(input("Tekanan Darah Diastole: "))
+					chol_upd = int(input("Total Cholesterol: "))
+					cp_upd = int(input("Chest Pain Level (chest pain type (1-typical angina; 2-atypical angina\n3-non-anginal pain; 4-asymptomatic): "))
+					fbs_upd = isfbs(glucose_upd)
+					levBMI_upd = isLevelBMI(bmi_upd)
+					levChol_upd = isLevelChol(chol_upd)
+					levbp_upd = isLevelBP(sbp_upd)
+					levGluc_upd = isLevelGlucose(glucose_upd)
+					#Input selesai
+					new_data = {'ID':[id_upd],'Nama': [name_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
+						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
+						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd]}
+					df_new_data = pd.DataFrame(new_data)
+					df_new_data.to_csv(filename, mode='a', header=False, index=False)
+					print("\nData berhasil disimpan!")
+					valid2 = 1
+				elif (in_menu == 1): #Tidak ingin menambahkan data
+					valid2 = 1
+				else:
+					in_menu = int(input("Pilihan salah! Coba lagi: "))
+		else: #Update data dari anggota terdaftar
+			id_upd = hasil["ID"].max()
+			age_upd = hasil["Age"].max()
+			glucose_upd = int(input("Gula Darah: "))
+			bmi_upd = int(input("BMI: "))
+			sbp_upd = int(input("Tekanan Darah Sistole: "))
+			dbp_upd = int(input("Tekanan Darah Diastole: "))
+			chol_upd = int(input("Total Cholesterol: "))
+			cp_upd = int(input("Chest Pain Level (chest pain type (1-typical angina; 2-atypical angina\n3-non-anginal pain; 4-asymptomatic): "))
+			fbs_upd = isfbs(glucose_upd)
+			levBMI_upd = isLevelBMI(bmi_upd)
+			levChol_upd = isLevelChol(chol_upd)
+			levbp_upd = isLevelBP(sbp_upd)
+			levGluc_upd = isLevelGlucose(glucose_upd)
+			
+			new_data = {'ID':[id_upd],'Nama': [name_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
+						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
+						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd]}
+			df_new_data = pd.DataFrame(new_data)
+			df_new_data.to_csv(filename, mode='a', header=False, index=False)
+			print("\nData berhasil disimpan!")
+			#Pilihan
+		valid = int(input("\nLanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
 		while ((valid != 0) and (valid != 1)):
 			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return()
@@ -203,50 +310,6 @@ def menu_cekGizi():
 		else:
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
-
-def isLevelChol(amount):
-	level = ""
-	if amount < 200:
-		level = "Normal"
-	elif (amount >= 200 and amount <= 239):
-		level = "Sedang"
-	else:
-		level = "Tinggi"
-	return (level)
-
-def isLevelBP(amount):
-	level = ""
-	if amount < 90:
-		level = "Rendah"
-	if (amount >= 90 and amount < 120):
-		level = "Normal"
-	elif (amount >= 120 and amount <= 140):
-		level = "Sedang"
-	else:
-		level = "Tinggi"
-	return(level)
-
-def isLevelGlucose(amount):
-	level = ""
-	if amount < 100:
-		level = "Normal"
-	elif (amount >= 100 and amount <= 125):
-		level = "Sedang"
-	else:
-		level = "Tinggi"
-	return (level)
-
-def isLevelBMI(amount):
-	level = ""
-	if amount < 18.5:
-		level = "Underweight"
-	elif (amount >= 18.5 and amount < 25):
-		level = "Normal"
-	elif (amount >= 25 and amount < 30):
-		level = "Obesitas"
-	else:
-		level = "Obesitas Ekstrim"
-	return(level)
 
 
 # Main Program
@@ -269,8 +332,7 @@ while (login == 1):
 			if (in_menuCekData == 1): #Cek Data Individu
 				cekData_search() 
 			elif (in_menuCekData == 2): #Update Data
-				# cekData_update()
-				print("On Progress.....")
+				cekData_update()
 	elif (in_menu == 2): #Cek Gizi
 		while (in_menuCekGizi != 3):
 			in_menuCekGizi = menu_cekGizi()
@@ -283,6 +345,6 @@ while (login == 1):
 
 #Logout
 clear()
-print("Terima Kasih\nTetap Jaga Kesehatan Bersama\n--- WARAS+ ---")
+print("Terima Kasih\nTetap Jaga Kesehatan Bersama\n--- WARAS+ ---\n")
 
 

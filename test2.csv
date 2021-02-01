@@ -17,3 +17,9 @@ ID,Nama,Bulan,Tahun,glucose,Age,BMI,dbp,sbp,chol,fbs,cp,Level BMI,Level Choleste
 5,sarah,1,2021,90,20,22.3,72,120,120,1,1,Normal,Normal,Sedang,Normal
 6,tsab,1,2021,160,55,36.3,90,150,233,1,4,Obesitas Ekstrim,Sedang,Tinggi,Tinggi
 9,realityclub,12,2020,90,32,19,70,130,131,0,0,Normal,Normal,Normal,Normal
+1101,ra,2,2021,190,23,29,80,100,200,1,4,Obesitas,Sedang,Tinggi,Tinggi
+1102,tas,2,2021,100,11,19,90,100,100,0,0,Normal,Normal,Sedang,Sedang
+1103,sar,2,2021,100,19,18,70,100,100,0,4,Underweight,Normal,Sedang,Sedang
+6,tsab,2,2021,200,55,29,74,100,12,1,1,Obesitas,Normal,Tinggi,Tinggi
+1104,astray,2,2021,100,29,16,50,100,100,0,4,Underweight,Normal,Sedang,Sedang
+5,sarah,2,2021,200,20,19,60,100,100,1,0,Normal,Normal,Tinggi,Tinggi
