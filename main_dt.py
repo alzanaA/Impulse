@@ -99,19 +99,20 @@ def DTpredict(data_target,predict_target):
 	test_data = data_target.head(1)[feature_cols]
 
 	# Create Decision Tree 
-	clf = DecisionTreeClassifier(criterion="entropy", max_depth=3)
+	clf = DecisionTreeClassifier(criterion="gini", max_depth=3)
 	clf = clf.fit(X_train,y_train)
 
 	#Predict the response for test dataset
 	y_pred = clf.predict(X_test)
-	y_pred_test = clf.predict(test_data)	
-	node_idx = clf.tree_.apply(check_array(test_data, dtype=DTYPE))
-	y_pred_prob = y_train[clf.tree_.apply(check_array(X_train, dtype=DTYPE)) == node_idx].mean()
+	y_pred_test = clf.predict(test_data)
+	y_pred_prob = clf.predict_proba(test_data[:len(test_data)])	
+	# node_idx = clf.tree_.apply(check_array(test_data, dtype=DTYPE))
+	# y_pred_prob = y_train[clf.tree_.apply(check_array(X_train, dtype=DTYPE)) == node_idx].mean()
 	accuracy = metrics.accuracy_score(y_test, y_pred)
 
 	#Showing the result
 	category_target = ""
-	probabilty_target = y_pred_prob * accuracy * 100
+	probabilty_target = y_pred_prob[0][1] * accuracy * 100
 	if (probabilty_target <= 15):
 		category_target = "Sangat Rendah"
 	elif (probabilty_target > 15 and probabilty_target <= 25):
@@ -126,7 +127,7 @@ def DTpredict(data_target,predict_target):
 		category_target = "Tinggi"
 
 	print("Kemungkinan Mengidap %s: " % (predict_target),end="") 
-	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob * accuracy * 100) + '%)') 
+	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob[0][1] * accuracy * 100) + '%)') 
 
 def log_in():
 	#Inisialisasi variabel
