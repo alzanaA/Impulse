@@ -2,6 +2,8 @@
 
 # Load libraries
 import pandas as pd
+import array as arr
+import csv
 from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
@@ -16,9 +18,16 @@ today = date.today()
 #Load Database
 data = pd.read_csv("test2.csv", header=0)
 filename = "test2.csv"
+menuMakanan="menu_makanan.csv"
 data_diabetes = pd.read_csv("PimaIndiansdata.csv", header=0)
 data_heart = pd.read_csv("heart.csv", header=0)
-data_user = pd.read_csv("user.csv",header=0)
+data_user = pd.read_csv("user.csv", header=0)
+data_sayur = pd.read_csv('sayur.csv', header=0)
+data_buah = pd.read_csv('buah.csv', header=0)
+data_makanan = pd.read_csv('makanan.csv', header=0)
+data_tambahan = pd.read_csv('tambahan.csv', header=0)
+
+
 data['Nama'] = data['Nama'].str.lower()
 
 def clear(): 
@@ -99,20 +108,19 @@ def DTpredict(data_target,predict_target):
 	test_data = data_target.head(1)[feature_cols]
 
 	# Create Decision Tree 
-	clf = DecisionTreeClassifier(criterion="gini", max_depth=3)
+	clf = DecisionTreeClassifier(criterion="entropy", max_depth=3)
 	clf = clf.fit(X_train,y_train)
 
 	#Predict the response for test dataset
 	y_pred = clf.predict(X_test)
-	y_pred_test = clf.predict(test_data)
-	y_pred_prob = clf.predict_proba(test_data[:len(test_data)])	
-	# node_idx = clf.tree_.apply(check_array(test_data, dtype=DTYPE))
-	# y_pred_prob = y_train[clf.tree_.apply(check_array(X_train, dtype=DTYPE)) == node_idx].mean()
+	y_pred_test = clf.predict(test_data)	
+	node_idx = clf.tree_.apply(check_array(test_data, dtype=DTYPE))
+	y_pred_prob = y_train[clf.tree_.apply(check_array(X_train, dtype=DTYPE)) == node_idx].mean()
 	accuracy = metrics.accuracy_score(y_test, y_pred)
 
 	#Showing the result
 	category_target = ""
-	probabilty_target = y_pred_prob[0][1] * accuracy * 100
+	probabilty_target = y_pred_prob * accuracy * 100
 	if (probabilty_target <= 15):
 		category_target = "Sangat Rendah"
 	elif (probabilty_target > 15 and probabilty_target <= 25):
@@ -127,7 +135,7 @@ def DTpredict(data_target,predict_target):
 		category_target = "Tinggi"
 
 	print("Kemungkinan Mengidap %s: " % (predict_target),end="") 
-	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob[0][1] * accuracy * 100) + '%)') 
+	print ('%s (' % (category_target) + '%.2f' % (y_pred_prob * accuracy * 100) + '%)') 
 
 def log_in():
 	#Inisialisasi variabel
@@ -303,6 +311,7 @@ def menu_cekGizi():
 	#Inisialisasi variabel
 	valid = 0
 
+
 	#Fungsi
 	in_menu = int(input("Pilih fitur:\n1. Rekomendasi menu\n2. Pantangan Konsumsi\n3. Kembali\n Pilihan: "))
 	while (valid == 0):
@@ -312,9 +321,151 @@ def menu_cekGizi():
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
 
+def menu_recommandation():
+	valid =0
+	clear()
 
+	#Perhitungan Kalori Maksimum dan Minimum Panti Jompo
+	curr_month_year = today.strftime("%B %Y")
+	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
+	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
+	dBMR = data[idx][idy][['Nama','Gender','Age','Height', 'Weight', 'Index Kebugaran', 'BMR']]
+	arddBMR = dBMR.to_numpy()
+
+	i = len(arddBMR)
+	x = 0
+	simpan = 0
+	simpan2 = 1
+	simpan2 = [0,0,0,0,0,0,0,0,0,0]
+
+	#Perhitungan kebutuhan kalori tiap anggota dengan menggunakan rumusan Harris Benedict Formula BMR
+	while (x<i):
+		if (arddBMR[x][1] == 'p'): #kondisi untuk perempuan
+			simpan = ((10*arddBMR[x][4])+(6.25*arddBMR[x][3])-(5*arddBMR[x][2])-161)
+			if (arddBMR[x][5] == 1):
+				simpan2[x] = simpan*1.2
+			elif (arddBMR[x][5]==2):
+				simpan2[x] = simpan*1.375
+			elif(arddBMR[x][5] == 3):
+				simpan2[x]= simpan*1.55
+			elif(arddBMR[x][5] == 4):
+				simpan2[x]= simpan*1.725
+			elif(arddBMR[x][5] == 5):
+				simpan2[x] = simpan*1.9
+			
+		elif (arddBMR[x][1]=='l'): #kondisi untuk laki-laki
+			simpan = ((10*arddBMR[x][4])+(6.25*arddBMR[x][3])-(5*arddBMR[x][2])+5)
+			if (arddBMR[x][5] == 1):
+				simpan2[x] = simpan*1.2
+			elif (arddBMR[x][5]==2):
+				simpan2[x] = simpan*1.375
+			elif(arddBMR[x][5] == 3):
+				simpan2[x]= simpan*1.55
+			elif(arddBMR[x][5] == 4):
+				simpan2[x]= simpan*1.725
+			elif(arddBMR[x][5] == 5):
+				simpan2[x] = simpan*1.9
+		x+=1
+	
+	kaloriMAX = max(simpan2)
+	kaloriMIN  = min(simpan2)
+
+	#Menu Rekomendasi perminggu untuk panti jompo
+	kaloriHitung = 0
+	hari = 1
+	print("Saran Menu Makanan Mingguan Untuk Panti Jompo ialah : \n")
+
+	#perhitungan dan pertimbangan pemberian makanan bagi panti jompo
+	while (hari == 1 or hari < 6) :
+		while (kaloriHitung<kaloriMIN or kaloriHitung>kaloriMAX):
+			dt_makanan1 = pd.DataFrame.sample(data_makanan)
+			dt_makanan2 = pd.DataFrame.sample(data_makanan)
+			dt_makanan3 = pd.DataFrame.sample(data_makanan)
+			while (dt_makanan2.index == dt_makanan1.index):
+				dt_makanan2 = pd.DataFrame.sample(data_makanan)
+			while (dt_makanan3.index == dt_makanan2.index or dt_makanan3.index == dt_makanan1.index) :
+				dt_makanan3 = pd.DataFrame.sample(data_makanan)
+			dt_sayur = pd.DataFrame.sample(data_sayur)
+			dt_buah = pd.DataFrame.sample(data_buah)
+			dt_tambahan = pd.DataFrame.sample(data_tambahan)
+			kaloriHitung = int(dt_makanan1["Kalori"]) 
+			kaloriHitung+= int(dt_makanan2["Kalori"])
+			kaloriHitung+= int(dt_makanan3["Kalori"])
+			kaloriHitung+= int(dt_sayur["Kalori"])
+			kaloriHitung+= int(dt_sayur["Kalori"])
+			kaloriHitung+= int(dt_buah["Kalori"])
+			kaloriHitung+= int(dt_tambahan["Kalori"])
+
+		if(hari ==1) :
+			print("Menu Makanan Senin : ")
+		elif(hari ==2) :
+			print("Menu Makan Selasa : ")
+		elif(hari ==3):
+			print("Menu Makanan Rabu : ")
+		elif(hari ==4):
+			print("Menu Makanan Kamis: ")
+		elif(hari==5):
+			print("Menu Makaknan Jumat:")
+		elif(hari==6):
+			print("Menu Makanan Sabtu: ")
+		elif(hari==7):
+			print("Menu Makanann Minggu:")
+		#menampilkan hasil makanan untuk para panti
+		print("Makan Pagi \t:", dt_makanan1["Menu_Makanan"].to_string(index=False))
+		print("Makan Siang \t:", dt_makanan2["Menu_Makanan"].to_string(index=False))
+		print("Makan Malan \t:", dt_makanan3["Menu_Makanan"].to_string(index=False))
+		print("Sayur \t\t:", dt_sayur["Menu_Makanan"].to_string(index=False))
+		print("Buah \t\t:", dt_buah["Menu_Makanan"].to_string(index=False))
+		print("Tambahan \t:", dt_tambahan["Menu_Makanan"].to_string(index=False))
+		print("Total Kalori Harian :", kaloriHitung)
+		print ("__________________________________________________")
+		kaloriHitung = 0
+		hari+= 1
+	print("Dengan kebutuhan harian Kalori Min ", kaloriMIN, "dan kebutuhan kalori maksimum ", kaloriMAX)
+	return (in_menu)
+#fungsi untuk menu pantangan pada lansia berdasarkan penyakit yang diderita
+def menu_pantangan() :
+	clear()
+	print("\t\t PANTANGAN MAKANAN WARGA PANTI \n ")
+	print("__________________________________________________")
+	valid = 0
+	#daftar makanan pantangan bagi lansia
+	darahTinggi = ("daging kemasan, frozen food, makanan kalengan, fast-food, pizza, susu krim, mentega, daging merah, alkohol,")
+	darahRendah = ("berminyak, makanan cepat saji, makanan pedas, tinggi karbohidat")
+	kolesterol = ("Gorengan, Lemak Jenuh, Jeroan, Kulit, Telur Ayam, fast food, udang")
+	gula = ("minuman pemanis buatan, lemak trans, roti, nanas, pasta, yogurt, sereal, kentang goreng")
+	curr_month_year = today.strftime("%B %Y")
+	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
+	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
+	dSemua = data[idx][idy][['Nama','Level Cholesterol','Level Tekanan Darah','Level Gula Darah']]
+	arddSemua = dSemua.to_numpy()
+
+	i = len(arddSemua)
+	x = 0 
+	Ada = 1
+	while(x<i):
+		if(arddSemua[x][1] !='Tinggi' and arddSemua[x][2]!=('Tinggi'or'Rendah') and arddSemua[x][3]!='Tinggi') :
+			x+=1
+
+		else :
+			print("  ",arddSemua[x][0], "Harus menghindari makanan :")
+			if (arddSemua[x][1] == 'Tinggi' ):
+				print("  ","\t", kolesterol)
+			if (arddSemua[x][2] == 'Tinggi'):
+				print("  ","\t",darahTinggi)
+			if(arddSemua[x][3]== 'Tinggi'):
+				print("  ","\t",gula)
+			if (arddSemua[x][2] == 'Rendah'):
+				print("  ","\t",darahRendah)
+			x+=1
+	
+	print("\n Hindari makanan tersebut untuk menjaga kesehatan tubuh yaa")
+	print("__________________________________________________")
+
+	return (in_menu)
 # Main Program
 #Login
+
 login = log_in()
 
 #After Login
@@ -339,8 +490,11 @@ while (login == 1):
 			in_menuCekGizi = menu_cekGizi()
 			if (in_menuCekGizi == 1): #Rekomendasi Menu
 				print("Rekomendasi menu")
+				menu_recommandation()
 			elif (in_menuCekGizi == 2): #Pantangan
 				print("Pantangan")
+				menu_pantangan()
+
 	elif (in_menu == 3):
 		login = 0
 
