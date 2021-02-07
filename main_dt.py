@@ -266,7 +266,8 @@ def cekData_update(data):
 					sbp_upd = int(input("Tekanan Darah Sistole: "))
 					dbp_upd = int(input("Tekanan Darah Diastole: "))
 					chol_upd = int(input("Total Cholesterol: "))
-					cp_upd = int(input("Chest Pain Level (chest pain type (0-typical angina; 1-atypical angina\n2-non-anginal pain; 3-asymptomatic): "))
+					cp_upd = int(input("Chest Pain Level (chest pain type 0-typical angina; 1-atypical angina\n2-non-anginal pain; 3-asymptomatic): "))
+					bugar_upd = int(input("Jumlah olahraga per minggu (1 (tidak pernah); 2 (1-3 kali);\n3 (3-5 kali); 4 (6-7 kali); 5 (> 7 kali): "))
 					fbs_upd = isfbs(glucose_upd)
 					levBMI_upd = isLevelBMI(bmi_upd)
 					levChol_upd = isLevelChol(chol_upd)
@@ -276,7 +277,7 @@ def cekData_update(data):
 					new_data = {'ID':[id_upd],'Nama': [name_upd],'Gender':[gender_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
 						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
 						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd],'Height':[tinggi_upd],
-						'Weight':[berat_upd],'Index Kebugaran':[''],'BMR':['']}
+						'Weight':[berat_upd],'Index Kebugaran':[bugar_upd],'BMR':['']}
 					df_new_data = pd.DataFrame(new_data)
 					data = data.append(df_new_data, ignore_index=True)
 					df_new_data.to_csv(filename, mode='a', header=False, index=False)
@@ -320,7 +321,7 @@ def cekData_update(data):
 			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return(data)
 
-def menu_cekGizi():
+def menu_cekGizi(data):
 	#Inisialisasi variabel
 	valid = 0
 
@@ -334,7 +335,7 @@ def menu_cekGizi():
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
 
-def menu_recommandation():
+def menu_recommandation(data):
 	valid =0
 	clear()
 
@@ -344,15 +345,16 @@ def menu_recommandation():
 	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
 	dBMR = data[idx][idy][['Nama','Gender','Age','Height', 'Weight', 'Index Kebugaran', 'BMR']]
 	arddBMR = dBMR.to_numpy()
+	print(arddBMR)
 
-	i = len(arddBMR)
+	data_length = len(arddBMR)
 	x = 0
 	simpan = 0
-	simpan2 = 1
-	simpan2 = [0,0,0,0,0,0,0,0,0,0]
+	simpan2=[]
+	simpan2 = [0 for i in range(data_length)] 
 
 	#Perhitungan kebutuhan kalori tiap anggota dengan menggunakan rumusan Harris Benedict Formula BMR
-	while (x<i):
+	while (x < data_length):
 		if (arddBMR[x][1] == 'p'): #kondisi untuk perempuan
 			simpan = ((10*arddBMR[x][4])+(6.25*arddBMR[x][3])-(5*arddBMR[x][2])-161)
 			if (arddBMR[x][5] == 1):
@@ -437,7 +439,7 @@ def menu_recommandation():
 	print("Dengan kebutuhan harian Kalori Min ", kaloriMIN, "dan kebutuhan kalori maksimum ", kaloriMAX)
 	return (in_menu)
 #fungsi untuk menu pantangan pada lansia berdasarkan penyakit yang diderita
-def menu_pantangan() :
+def menu_pantangan(data) :
 	clear()
 	print("\t\t PANTANGAN MAKANAN WARGA PANTI \n ")
 	print("__________________________________________________")
@@ -501,13 +503,13 @@ while (login == 1):
 				data = cekData_update(data)
 	elif (in_menu == 2): #Cek Gizi
 		while (in_menuCekGizi != 3):
-			in_menuCekGizi = menu_cekGizi()
+			in_menuCekGizi = menu_cekGizi(data)
 			if (in_menuCekGizi == 1): #Rekomendasi Menu
 				print("Rekomendasi menu")
-				menu_recommandation()
+				menu_recommandation(data)
 			elif (in_menuCekGizi == 2): #Pantangan
 				print("Pantangan")
-				menu_pantangan()
+				menu_pantangan(data)
 
 	elif (in_menu == 3):
 		login = 0
