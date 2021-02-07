@@ -88,6 +88,9 @@ def isfbs(amount):
 	else: 
 		return(0)
 
+def bmi(height,weight):
+	return(weight/(0.01*0.01*height*height))
+
 def DTpredict(data_target,predict_target):
 	# load dataset
 	if (predict_target == 'Diabetes'):
@@ -161,7 +164,7 @@ def menu():
 	#Fungsi
 	clear()
 	print("------------------------------------\n-------- WARAS+: MAIN MENU ---------\n------------------------------------\n")
-	in_menu = int(input("Pilih menu:\n1. Data Kesehatan\n2. Info Gizi\n3. Log Out\n Pilihan: "))
+	in_menu = int(input("Pilih menu:\n1. Data Kesehatan\n2. Info Gizi\n3. Log Out\n\nPilihan: "))
 	while (valid == 0):
 		if (in_menu > 0 and in_menu <= 3):
 			valid = 1
@@ -169,13 +172,14 @@ def menu():
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
 
-def menu_cekData():
+def menu_cekData(data):
 	#Inisialisasi variabel
 	valid = 0
 	#Fungsi
 	clear()
 	curr_month_year = today.strftime("%B %Y")
 	print("\t\tData Kesehatan Terbaru \n\t(terakhir diperbaharui: %s)\n__________________________________________________\n" % (curr_month_year))
+	print(data)
 	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
 	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
 	print(data[idx][idy][['ID','Nama','Level BMI','Level Cholesterol','Level Tekanan Darah',
@@ -192,7 +196,7 @@ def menu_cekData():
 			in_menu = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
 	return (in_menu)
 
-def cekData_search():
+def cekData_search(data):
 	#Inisialisasi variabel
 	valid = 0
 	#Fungsi
@@ -229,7 +233,7 @@ def cekData_search():
 	clear()
 	return()
 
-def cekData_update():
+def cekData_update(data):
 	#Inisiasi Variabel
 	valid = 0
 	valid2 = 0
@@ -252,28 +256,31 @@ def cekData_update():
 					print("\nUPDATE DATA KESEHATAN\n_________________________________\n\nPembuatan Data Baru\n")
 					print("Nama Lengkap: %s" % (name_upd))
 					#Input data baru
-					print(type(data["ID"].max()))
-					print(data["ID"].max())
 					id_upd = data["ID"].max() + 1
-					print(id_upd)
+					gender_upd = input("Jenis Kelamin (p/l): ")
 					age_upd = int(input("Umur: "))
+					tinggi_upd = int(input("Tinggi Badan (cm): "))
+					berat_upd = int(input("Berat badan (kg): "))
+					bmi_upd = round(bmi(tinggi_upd,berat_upd),2)
 					glucose_upd = int(input("Gula Darah: "))
-					bmi_upd = int(input("BMI: "))
 					sbp_upd = int(input("Tekanan Darah Sistole: "))
 					dbp_upd = int(input("Tekanan Darah Diastole: "))
 					chol_upd = int(input("Total Cholesterol: "))
-					cp_upd = int(input("Chest Pain Level (chest pain type (1-typical angina; 2-atypical angina\n3-non-anginal pain; 4-asymptomatic): "))
+					cp_upd = int(input("Chest Pain Level (chest pain type (0-typical angina; 1-atypical angina\n2-non-anginal pain; 3-asymptomatic): "))
 					fbs_upd = isfbs(glucose_upd)
 					levBMI_upd = isLevelBMI(bmi_upd)
 					levChol_upd = isLevelChol(chol_upd)
 					levbp_upd = isLevelBP(sbp_upd)
 					levGluc_upd = isLevelGlucose(glucose_upd)
 					#Input selesai
-					new_data = {'ID':[id_upd],'Nama': [name_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
+					new_data = {'ID':[id_upd],'Nama': [name_upd],'Gender':[gender_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
 						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
-						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd]}
+						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd],'Height':[tinggi_upd],
+						'Weight':[berat_upd],'Index Kebugaran':[''],'BMR':['']}
 					df_new_data = pd.DataFrame(new_data)
+					data = data.append(df_new_data, ignore_index=True)
 					df_new_data.to_csv(filename, mode='a', header=False, index=False)
+					print(data)
 					print("\nData berhasil disimpan!")
 					valid2 = 1
 				elif (in_menu == 1): #Tidak ingin menambahkan data
@@ -283,29 +290,35 @@ def cekData_update():
 		else: #Update data dari anggota terdaftar
 			id_upd = hasil["ID"].max()
 			age_upd = hasil["Age"].max()
+			gender_upd = hasil["Gender"].max()
 			glucose_upd = int(input("Gula Darah: "))
-			bmi_upd = int(input("BMI: "))
+			tinggi_upd = int(input("Tinggi Badan (cm): "))
+			berat_upd = int(input("Berat badan (kg): "))
+			bmi_upd = round(bmi(tinggi_upd,berat_upd),2)
 			sbp_upd = int(input("Tekanan Darah Sistole: "))
 			dbp_upd = int(input("Tekanan Darah Diastole: "))
 			chol_upd = int(input("Total Cholesterol: "))
-			cp_upd = int(input("Chest Pain Level (chest pain type (1-typical angina; 2-atypical angina\n3-non-anginal pain; 4-asymptomatic): "))
+			cp_upd = int(input("Chest Pain Level (chest pain type (0-typical angina; 1-atypical angina\n2-non-anginal pain; 3-asymptomatic): "))
 			fbs_upd = isfbs(glucose_upd)
 			levBMI_upd = isLevelBMI(bmi_upd)
 			levChol_upd = isLevelChol(chol_upd)
 			levbp_upd = isLevelBP(sbp_upd)
 			levGluc_upd = isLevelGlucose(glucose_upd)
 			
-			new_data = {'ID':[id_upd],'Nama': [name_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
+			new_data = {'ID':[id_upd],'Nama': [name_upd],'Gender':[gender_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
 						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
-						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd]}
+						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd],'Height':[tinggi_upd],
+						'Weight':[berat_upd],'Index Kebugaran':[''],'BMR':['']}
 			df_new_data = pd.DataFrame(new_data)
+			data = data.append(df_new_data, ignore_index=True)
 			df_new_data.to_csv(filename, mode='a', header=False, index=False)
+			print(data)
 			print("\nData berhasil disimpan!")
 			#Pilihan
 		valid = int(input("\nLanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
 		while ((valid != 0) and (valid != 1)):
 			valid = int(input("Pilihan tidak valid! Masukkan kembali pilihan Anda: "))
-	return()
+	return(data)
 
 def menu_cekGizi():
 	#Inisialisasi variabel
@@ -480,11 +493,12 @@ while (login == 1):
 	in_menu = menu()
 	if (in_menu == 1): #Cek Data
 		while (in_menuCekData != 3):
-			in_menuCekData = menu_cekData()
+			print(data)
+			in_menuCekData = menu_cekData(data)
 			if (in_menuCekData == 1): #Cek Data Individu
-				cekData_search() 
+				cekData_search(data) 
 			elif (in_menuCekData == 2): #Update Data
-				cekData_update()
+				data = cekData_update(data)
 	elif (in_menu == 2): #Cek Gizi
 		while (in_menuCekGizi != 3):
 			in_menuCekGizi = menu_cekGizi()
