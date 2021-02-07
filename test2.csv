@@ -29,4 +29,7 @@ ID,Nama,Gender,Bulan,Tahun,glucose,Age,BMI,dbp,sbp,chol,fbs,cp,Level BMI,Level C
 1108,irfan hakim,l,2,2021,100,45,22.49,76,100,90,0,2,Normal,Normal,Sedang,Sedang,170,65,4,
 1109,sty gyu,p,2,2021,90,45,17.21,70,120,90,0,0,Underweight,Normal,Normal,Normal,167,48,4,
 1110,buzz lightmonth,p,2,2021,134,67,22.6,99,120,100,1,2,Normal,Normal,Tinggi,Tinggi,156,55,1,
-5,sarah,p,2,2021,212,20,56.06,22,22,22,1,2,Obesitas Ekstrim,Normal,Tinggi,Tinggi,199,222,2,
+
+1111,rani,p,2,2021,90,23,16.53,90,120,100,0,0,Underweight,Normal,Normal,Normal,165,45,2,
+1112,rana,p,2,2021,90,18,16.49,180,120,90,0,0,Underweight,Normal,Normal,Normal,167,46,1,
+1113,rama,l,2,2021,100,22,26.12,50,50,50,0,0,Obesitas,Normal,Sedang,Sedang,175,80,2,

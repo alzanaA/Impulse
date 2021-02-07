@@ -300,6 +300,7 @@ def cekData_update(data):
 			dbp_upd = int(input("Tekanan Darah Diastole: "))
 			chol_upd = int(input("Total Cholesterol: "))
 			cp_upd = int(input("Chest Pain Level (chest pain type (0-typical angina; 1-atypical angina\n2-non-anginal pain; 3-asymptomatic): "))
+			bugar_upd = int(input("Jumlah olahraga per minggu (1 (tidak pernah); 2 (1-3 kali);\n3 (3-5 kali); 4 (6-7 kali); 5 (> 7 kali): "))
 			fbs_upd = isfbs(glucose_upd)
 			levBMI_upd = isLevelBMI(bmi_upd)
 			levChol_upd = isLevelChol(chol_upd)
@@ -309,11 +310,10 @@ def cekData_update(data):
 			new_data = {'ID':[id_upd],'Nama': [name_upd],'Gender':[gender_upd],'Bulan': [bulan_upd],'Tahun':[tahun_upd],'glucose':[glucose_upd],'Age':[age_upd],
 						'BMI':[bmi_upd],'dbp':[dbp_upd],'sbp':[sbp_upd],'chol':[chol_upd],'fbs':[fbs_upd],'cp':[cp_upd],'Level BMI':[levBMI_upd],
 						'Level Cholesterol':[levChol_upd],'Level Tekanan Darah':[levGluc_upd],'Level Gula Darah':[levGluc_upd],'Height':[tinggi_upd],
-						'Weight':[berat_upd],'Index Kebugaran':[''],'BMR':['']}
+						'Weight':[berat_upd],'Index Kebugaran':[bugar_upd],'BMR':['']}
 			df_new_data = pd.DataFrame(new_data)
 			data = data.append(df_new_data, ignore_index=True)
 			df_new_data.to_csv(filename, mode='a', header=False, index=False)
-			print(data)
 			print("\nData berhasil disimpan!")
 			#Pilihan
 		valid = int(input("\nLanjutkan Update Data?   0. Ya 	1. Tidak\nPilihan: "))
