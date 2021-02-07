@@ -179,7 +179,7 @@ def menu_cekData(data):
 	clear()
 	curr_month_year = today.strftime("%B %Y")
 	print("\t\tData Kesehatan Terbaru \n\t(terakhir diperbaharui: %s)\n__________________________________________________\n" % (curr_month_year))
-	print(data)
+	
 	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
 	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
 	print(data[idx][idy][['ID','Nama','Level BMI','Level Cholesterol','Level Tekanan Darah',
@@ -281,7 +281,7 @@ def cekData_update(data):
 					df_new_data = pd.DataFrame(new_data)
 					data = data.append(df_new_data, ignore_index=True)
 					df_new_data.to_csv(filename, mode='a', header=False, index=False)
-					print(data)
+					
 					print("\nData berhasil disimpan!")
 					valid2 = 1
 				elif (in_menu == 1): #Tidak ingin menambahkan data
@@ -345,8 +345,7 @@ def menu_recommandation(data):
 	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
 	dBMR = data[idx][idy][['Nama','Gender','Age','Height', 'Weight', 'Index Kebugaran', 'BMR']]
 	arddBMR = dBMR.to_numpy()
-	print(arddBMR)
-
+	
 	data_length = len(arddBMR)
 	x = 0
 	simpan = 0
@@ -390,8 +389,9 @@ def menu_recommandation(data):
 	hari = 1
 	print("Saran Menu Makanan Mingguan Untuk Panti Jompo ialah : \n")
 
+	print("Dengan kebutuhan harian Kalori Min ", kaloriMIN, "kkal dan kebutuhan kalori maksimum ", kaloriMAX, "kkal")
 	#perhitungan dan pertimbangan pemberian makanan bagi panti jompo
-	while (hari == 1 or hari < 6) :
+	while (hari == 1 or hari < 8) :
 		while (kaloriHitung<kaloriMIN or kaloriHitung>kaloriMAX):
 			dt_makanan1 = pd.DataFrame.sample(data_makanan)
 			dt_makanan2 = pd.DataFrame.sample(data_makanan)
@@ -432,11 +432,11 @@ def menu_recommandation(data):
 		print("Sayur \t\t:", dt_sayur["Menu_Makanan"].to_string(index=False))
 		print("Buah \t\t:", dt_buah["Menu_Makanan"].to_string(index=False))
 		print("Tambahan \t:", dt_tambahan["Menu_Makanan"].to_string(index=False))
-		print("Total Kalori Harian :", kaloriHitung)
+		print("Total Kalori Harian :", kaloriHitung, "kkal")
 		print ("__________________________________________________")
 		kaloriHitung = 0
 		hari+= 1
-	print("Dengan kebutuhan harian Kalori Min ", kaloriMIN, "dan kebutuhan kalori maksimum ", kaloriMAX)
+	
 	return (in_menu)
 #fungsi untuk menu pantangan pada lansia berdasarkan penyakit yang diderita
 def menu_pantangan(data) :
@@ -445,10 +445,10 @@ def menu_pantangan(data) :
 	print("__________________________________________________")
 	valid = 0
 	#daftar makanan pantangan bagi lansia
-	darahTinggi = ("daging kemasan, frozen food, makanan kalengan, fast-food, pizza, susu krim, mentega, daging merah, alkohol,")
-	darahRendah = ("berminyak, makanan cepat saji, makanan pedas, tinggi karbohidat")
-	kolesterol = ("Gorengan, Lemak Jenuh, Jeroan, Kulit, Telur Ayam, fast food, udang")
-	gula = ("minuman pemanis buatan, lemak trans, roti, nanas, pasta, yogurt, sereal, kentang goreng")
+	darahTinggi = ("Darah Tinggi \t : daging kemasan, frozen food, makanan kalengan, fast-food, pizza, susu krim, mentega, daging merah, alkohol,")
+	darahRendah = ("Darah Rendah \t : berminyak, makanan cepat saji, makanan pedas, tinggi karbohidat")
+	kolesterol = ("Kolesterol \t : Gorengan, Lemak Jenuh, Jeroan, Kulit, Telur Ayam, fast food, udang")
+	gula = ("Diabetes \t : minuman pemanis buatan, lemak trans, roti, nanas, pasta, yogurt, sereal, kentang goreng")
 	curr_month_year = today.strftime("%B %Y")
 	idx = data.groupby(['Nama','Tahun'])['Bulan'].transform(max) == data['Bulan']
 	idy = data[idx].groupby(['Nama'])['Tahun'].transform(max) == data[idx]['Tahun']
